@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">MyScreenCaptureService</string>
+    <string name="introduction">说明：\n
+        \n
+        1.屏幕录制文件会被保存到“/sdcard/ScreenCapture/”路径下，\n
+        文件名为：开始录制时间+“.mp4”\n
+        2.程序弹出获取权限对话框，请授权。否则程序将无法运行，\n
+        3.程序只能在Android 5.0以上系统中运行\n
+        \n
+    使用步骤：\n
+        \n
+    1.点击中间按钮“点击开启屏幕录制”，开启屏幕录制服务\n
+    2.退出程序，这时屏幕录制功能在后台运行，程序正在录制屏幕\n
+    3.想要结束录制，下拉状态栏，点击“屏幕录制前台服务”，重新进入程序，\n
+      点击中间按钮“点击关闭屏幕录制”，结束屏幕录制服务\n
+    \n
+    作者：哈尔滨工业大学-李俊达\n
+    \n</string>
+</resources>

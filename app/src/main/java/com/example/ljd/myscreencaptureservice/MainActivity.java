@@ -2,9 +2,11 @@ package com.example.ljd.myscreencaptureservice;
 
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -18,6 +20,7 @@ import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -35,6 +38,10 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.example.ljd.myscreencaptureservice.rtspserver.SessionBuilder;
+import com.example.ljd.myscreencaptureservice.rtspserver.rtsp.RtspServer;
+import com.example.ljd.myscreencaptureservice.rtspserver.video.VideoQuality;
+
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
@@ -45,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
     public static MediaProjection mMediaProjection;
     ToggleButton tbtScreenCaptureService;
 
+    private RtspServer mRtspServer;
+
     private ScreenCaptureService.MyBinder mBinder;
     private boolean SERVICE_HAS_BIND = false;
     private boolean SERVICE_IS_START = false;
@@ -52,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int CAPTURE_CODE = 115;
     private static final int WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 123;
+    private static final int INTERNET_REQUEST_CODE = 124;
+    private int mScreenDensity;
+    private int mScreenWidth;
+    private int mScreenHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +77,9 @@ public class MainActivity extends AppCompatActivity {
         if (!SC_IS_RUN) {
             startActivityForResult(mMediaProjectionManager.createScreenCaptureIntent(), CAPTURE_CODE);
         }
+        GetWindowInfo();
 
+        RtspServer.setContext(getApplicationContext());
         myBindService();
 
         tbtScreenCaptureService.setChecked(SC_IS_RUN);
@@ -107,7 +122,9 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }else{
                 mMediaProjection = mMediaProjectionManager.getMediaProjection(resultCode,data);
+
             }
+            SetSessionBuilder();
         }
     }
     private void AskForPermission(){
@@ -118,6 +135,11 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},WRITE_EXTERNAL_STORAGE_REQUEST_CODE);
         }else{
             Log.v("onActivityResult","myThread.start(); start");
+        }
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.INTERNET)
+                != PackageManager.PERMISSION_GRANTED){
+            Log.v("AskForPermission()","requestPermissions");
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.INTERNET},INTERNET_REQUEST_CODE);
         }
     }
 
@@ -139,18 +161,59 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
+    //绑定服务时调用
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBinder = (ScreenCaptureService.MyBinder)service;
         }
-
+        //解绑时不会调用
         @Override
         public void onServiceDisconnected(ComponentName name) {
 
         }
     };
+    private RtspServer.CallbackListener mRtspCallbackListener = new RtspServer.CallbackListener() {
+
+        @Override
+        public void onError(RtspServer server, Exception e, int error) {
+            // We alert the user that the port is already used by another app.
+            if (error == RtspServer.ERROR_BIND_FAILED) {
+
+            }
+        }
+
+        @Override
+        public void onMessage(RtspServer server, int message) {
+        }
+
+    };
+
+    private void GetWindowInfo(){
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager mWindowManager = (WindowManager)getApplication().getSystemService(getApplication().WINDOW_SERVICE);
+        mWindowManager.getDefaultDisplay().getMetrics(metrics);
+        mScreenDensity = metrics.densityDpi;
+        mScreenWidth = metrics.widthPixels/5;
+        mScreenHeight = metrics.heightPixels/5;
+        //mScreenDensity = 30;
+//        mScreenWidth = 100;
+//        mScreenHeight = 600;
+        Log.v(TAG,"mScreenWidth is :"+mScreenWidth+";mScreenHeight is :"+mScreenHeight+"mScreenDensity is :"+mScreenDensity);
+    }
+    private void SetSessionBuilder(){
+        Log.v(TAG,"SetSessionBuilder()");
+        SessionBuilder.getInstance()
+                .setMediaProjection(mMediaProjection)
+                .setContext(getApplicationContext())
+                .setAudioEncoder(SessionBuilder.AUDIO_NONE)
+                .setVideoEncoder(SessionBuilder.VIDEO_H264)
+                .setVideoQuality(new VideoQuality(mScreenWidth,mScreenHeight,30,8000000,mScreenDensity)).build();
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putString(RtspServer.KEY_PORT, String.valueOf(1234));
+        editor.commit();
+
+    }
     private void myShareScreen(){
         Intent intent = new Intent(MainActivity.this, ScreenCaptureService.class);
         myStartService(intent);

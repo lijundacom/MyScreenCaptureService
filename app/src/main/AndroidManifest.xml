@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.ljd.myscreencaptureservice">
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -20,6 +21,7 @@
             android:name=".ScreenCaptureService"
             android:enabled="true"
             android:exported="true"></service>
+        <service android:name="com.example.ljd.myscreencaptureservice.rtspserver.rtsp.RtspServer"/>
     </application>
 
 </manifest>

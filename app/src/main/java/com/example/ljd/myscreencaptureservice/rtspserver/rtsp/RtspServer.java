@@ -319,7 +319,8 @@ public class RtspServer extends Service {
 	 */
 	protected Session handleRequest(String uri, Socket client) throws IllegalStateException, IOException {
 		Log.i("TAG","handleRequest: uri = "+uri);
-		Session session = UriParser.parse(uri);
+		Session session = UriParser.parse(uri);//对sessionBuilder设置
+		//Session session = SessionBuilder.getInstance().getSession();
 		session.setOrigin(client.getLocalAddress().getHostAddress());
 
 		if (session.getDestination()==null) {
@@ -350,7 +351,9 @@ public class RtspServer extends Service {
 			Log.i(TAG,"RTSP server listening on port "+mServer.getLocalPort());
 			while (!Thread.interrupted()) {
 				try {
+					//可接收多个客户端
 					new WorkerThread(mServer.accept()).start();
+					Log.v(TAG,"新的客户端连接");
 				} catch (SocketException e) {
 					break;
 				} catch (IOException e) {
@@ -386,7 +389,6 @@ public class RtspServer extends Service {
 			mInput = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			mOutput = client.getOutputStream();
 			mClient = client;
-			mSession = new Session();
 		}
 
 		public void run() {
@@ -415,6 +417,7 @@ public class RtspServer extends Service {
 				// Do something accordingly like starting the streams, sending a session description
 				if (request != null) {
 					try {
+						//主要功能
 						response = processRequest(request);
 					}
 					catch (Exception e) {
@@ -470,8 +473,8 @@ public class RtspServer extends Service {
                 if (request.method.equalsIgnoreCase("DESCRIBE")) {
 					Log.i(TAG,"进行DESCRIBE");
                     // Parse the requested URI and configure the session
-                    mSession = handleRequest(request.uri, mClient);
-                    mSessions.put(mSession, null);
+                    mSession = handleRequest(request.uri, mClient);//设置本机IP和目标IP
+                    //mSessions.put(mSession, null);
                     mSession.syncConfigure();
 
                     String requestContent = mSession.getSessionDescription();
@@ -541,7 +544,8 @@ public class RtspServer extends Service {
                     mSession.getTrack(trackId).setDestinationPorts(p1, p2);
 
                     boolean streaming = isStreaming();
-                    mSession.syncStart(trackId);//开始传输
+					//Log.v(TAG,"//开始传输//encodeWithMediaCodec()");
+                    mSession.syncStart(trackId);//开始传输//encodeWithMediaCodec()
                     if (!streaming && isStreaming()) {
                         postMessage(MESSAGE_STREAMING_STARTED);
                     }

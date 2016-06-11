@@ -39,6 +39,7 @@ import android.hardware.Camera.CameraInfo;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.util.Log;
 
 /**
  * You should instantiate this class with the {@link SessionBuilder}.<br />
@@ -436,21 +437,23 @@ public class Session {
 	 * Throws exceptions in addition to calling a callback.
 	 * @param id The id of the stream to start
 	 **/
-	public void syncStart(int id) 			
+	public void syncStart(int id)
+
 			throws CameraInUseException, 
 			StorageUnavailableException,
 			ConfNotSupportedException, 
 			InvalidSurfaceException, 
 			UnknownHostException,
 			IOException {
-
 		Stream stream = id==0 ? mAudioStream : mVideoStream;
+		//第二次连接截止到这里
 		if (stream!=null && !stream.isStreaming()) {
 			try {
 				InetAddress destination =  InetAddress.getByName(mDestination);
 				stream.setTimeToLive(mTimeToLive);
 				stream.setDestinationAddress(destination);
-				stream.start();
+
+				stream.start();//主要功能
 				if (getTrack(1-id) == null || getTrack(1-id).isStreaming()) {
 					postSessionStarted();
 				}

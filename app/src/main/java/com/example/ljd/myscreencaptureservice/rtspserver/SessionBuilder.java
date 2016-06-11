@@ -123,7 +123,7 @@ public class SessionBuilder {
 		H264Stream stream = new H264Stream(mCamera);
 		if (mContext!=null)
 			stream.setPreferences(PreferenceManager.getDefaultSharedPreferences(mContext));
-		session.addVideoTrack(stream);
+		session.addVideoTrack(stream);//为session中添加一个videoStream实例
 
 
 		if (session.getVideoTrack()!=null) {

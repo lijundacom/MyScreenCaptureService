@@ -42,6 +42,7 @@ import com.example.ljd.myscreencaptureservice.rtspserver.video.VideoQuality;
 
 import android.content.ContentValues;
 import android.hardware.Camera.CameraInfo;
+import android.util.Log;
 
 /**
  * This class parses URIs received by the RTSP server and configures a Session accordingly.
@@ -84,7 +85,7 @@ public class UriParser {
 //        }
 
 		if (params.size()>0) {
-
+			Log.v(TAG,"params.size()>0");
 			builder.setAudioEncoder(AUDIO_NONE).setVideoEncoder(VIDEO_NONE);
             Set<String> paramKeys=params.keySet();
 			// Those parameters must be parsed first or else they won't necessarily be taken into account

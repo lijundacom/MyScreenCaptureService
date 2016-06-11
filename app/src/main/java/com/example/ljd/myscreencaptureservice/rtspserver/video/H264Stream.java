@@ -35,11 +35,15 @@ import android.annotation.SuppressLint;
 import android.content.SharedPreferences.Editor;
 import android.graphics.ImageFormat;
 import android.hardware.Camera.CameraInfo;
+import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
+import android.media.MediaFormat;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.service.textservice.SpellCheckerService.Session;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Surface;
 
 /**
  * A class for streaming H.264 from the camera of an android device using RTP.
@@ -54,6 +58,9 @@ public class H264Stream extends VideoStream {
 
 	private Semaphore mLock = new Semaphore(0);
 	private MP4Config mConfig;
+	MediaCodec.BufferInfo info;
+	MediaFormat format;
+	MediaCodec mediaCodec;
 
 	/**
 	 * Constructs the H.264 stream.
@@ -92,7 +99,7 @@ public class H264Stream extends VideoStream {
 	 */
 	public synchronized void start() throws IllegalStateException, IOException {
 		if (!mStreaming) {
-			configure();//生成本地视频文件提取H.264
+			configure();//生成本地视频文件提取H.264的sps pps
 			byte[] pps = Base64.decode(mConfig.getB64PPS(), Base64.NO_WRAP);
 			byte[] sps = Base64.decode(mConfig.getB64SPS(), Base64.NO_WRAP);
 			((H264Packetizer)mPacketizer).setStreamParameters(pps, sps);
@@ -140,6 +147,7 @@ public class H264Stream extends VideoStream {
 			return testH264();
 		}
 	}
+
 
 	// Should not be called by the UI thread
 	private MP4Config testMediaRecorderAPI() throws RuntimeException, IOException {

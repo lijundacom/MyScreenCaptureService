@@ -410,7 +410,7 @@ public abstract class VideoStream extends MediaStream {
 
 		// The packetizer encapsulates the bit stream in an RTP stream and send it over the network
 		mPacketizer.setInputStream(is);
-		mPacketizer.start();
+		mPacketizer.start();//只能start一次
 
 		mStreaming = true;
 
@@ -540,7 +540,7 @@ public abstract class VideoStream extends MediaStream {
 
 		// The packetizer encapsulates the bit stream in an RTP stream and send it over the network
 		mPacketizer.setInputStream(new MediaCodecInputStream(mMediaCodec));
-		mPacketizer.start();
+		mPacketizer.start();//每次start，新建一个线程
 
 		mStreaming = true;
 

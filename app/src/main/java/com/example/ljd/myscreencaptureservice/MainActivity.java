@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
     private int mScreenWidth;
     private int mScreenHeight;
 
+    private String IPAddress = "192.168.1.33";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -194,8 +196,8 @@ public class MainActivity extends AppCompatActivity {
         WindowManager mWindowManager = (WindowManager)getApplication().getSystemService(getApplication().WINDOW_SERVICE);
         mWindowManager.getDefaultDisplay().getMetrics(metrics);
         mScreenDensity = metrics.densityDpi;
-        mScreenWidth = metrics.widthPixels/5;
-        mScreenHeight = metrics.heightPixels/5;
+        mScreenWidth = metrics.widthPixels/10;
+        mScreenHeight = metrics.heightPixels/10;
         //mScreenDensity = 30;
 //        mScreenWidth = 100;
 //        mScreenHeight = 600;
@@ -208,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
                 .setContext(getApplicationContext())
                 .setAudioEncoder(SessionBuilder.AUDIO_NONE)
                 .setVideoEncoder(SessionBuilder.VIDEO_H264)
+                .setDestination(IPAddress)
                 .setVideoQuality(new VideoQuality(mScreenWidth,mScreenHeight,30,8000000,mScreenDensity)).build();
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
         editor.putString(RtspServer.KEY_PORT, String.valueOf(1234));

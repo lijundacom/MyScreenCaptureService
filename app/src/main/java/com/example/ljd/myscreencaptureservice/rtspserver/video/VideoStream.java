@@ -23,6 +23,7 @@ package com.example.ljd.myscreencaptureservice.rtspserver.video;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -109,7 +110,9 @@ public abstract class VideoStream extends MediaStream {
 		super();
 		setCamera(camera);
 	}
-
+	public void setDestinationAddress(InetAddress dest) {
+		super.setDestinationAddress(dest);
+	}
 	/**
 	 * Sets the camera that will be used to capture video.
 	 * You can call this method at any time and changes will take effect next time you start the stream.

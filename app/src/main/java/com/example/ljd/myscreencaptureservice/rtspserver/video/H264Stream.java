@@ -22,6 +22,7 @@ package com.example.ljd.myscreencaptureservice.rtspserver.video;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -82,6 +83,9 @@ public class H264Stream extends VideoStream {
 		mVideoEncoder = MediaRecorder.VideoEncoder.H264;
 		mPacketizer = new H264Packetizer();
 	}
+	public void setDestinationAddress(InetAddress dest) {
+		super.setDestinationAddress(dest);
+	}
 
 	/**
 	 * Returns a description of the stream using SDP. It can then be included in an SDP file.
@@ -99,7 +103,7 @@ public class H264Stream extends VideoStream {
 	 */
 	public synchronized void start() throws IllegalStateException, IOException {
 		if (!mStreaming) {
-			configure();//生成本地视频文件提取H.264的sps pps
+			//configure();//生成本地视频文件提取H.264的sps pps
 			byte[] pps = Base64.decode(mConfig.getB64PPS(), Base64.NO_WRAP);
 			byte[] sps = Base64.decode(mConfig.getB64SPS(), Base64.NO_WRAP);
 			((H264Packetizer)mPacketizer).setStreamParameters(pps, sps);

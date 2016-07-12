@@ -46,11 +46,15 @@ abstract public class AbstractPacketizer {
 	
 	protected long ts = 0;
 
+
+	public int getSSRC() {
+		return socket.getSSRC();
+	}
 	public AbstractPacketizer() {
 		int ssrc = new Random().nextInt();
 		ts = new Random().nextInt();
 		socket = new RtpSocket();
-		socket.setSSRC(ssrc);
+		socket.setSSRC(ssrc);//ssrc是一个随机数
 	}
 
 	public RtpSocket getRtpSocket() {
@@ -59,10 +63,6 @@ abstract public class AbstractPacketizer {
 
 	public void setSSRC(int ssrc) {
 		socket.setSSRC(ssrc);
-	}
-
-	public int getSSRC() {
-		return socket.getSSRC();
 	}
 
 	public void setInputStream(InputStream is) {

@@ -41,7 +41,7 @@ import android.util.Log;
 public class RtpSocket implements Runnable {
 
 	public static final String TAG = "RtpSocket";
-
+	private boolean VERBOSE = true;
 	/** Use this to use UDP for the transport protocol. */
 	public final static int TRANSPORT_UDP = 0x00;
 	
@@ -70,7 +70,7 @@ public class RtpSocket implements Runnable {
 	private int mCount = 0;
 	private byte mTcpHeader[];
 	protected OutputStream mOutputStream = null;
-	
+	private InetAddress myDest;
 	private AverageBitrate mAverageBitrate;
 
 	/**
@@ -107,14 +107,15 @@ public class RtpSocket implements Runnable {
 			/* Payload Type */
 			mBuffers[i][1] = (byte) 96;
 
-			/* Byte 2,3        ->  Sequence Number                   */
-			/* Byte 4,5,6,7    ->  Timestamp                         */
+			/* Byte 2,3        ->  Sequence Number   序列号                */
+			/* Byte 4,5,6,7    ->  Timestamp   时间戳，负载中第一个字节的采样时间                      */
 			/* Byte 8,9,10,11  ->  Sync Source Identifier            */
 
 		}
 
 		try {
 		mSocket = new MulticastSocket();
+
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -134,6 +135,11 @@ public class RtpSocket implements Runnable {
 	
 	/** Closes the underlying socket. */
 	public void close() {
+		try {
+			mSocket.leaveGroup(myDest);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		mSocket.close();
 	}
 
@@ -169,8 +175,17 @@ public class RtpSocket implements Runnable {
 	/** Sets the destination address and to which the packets will be sent. */
 	public void setDestination(InetAddress dest, int dport, int rtcpPort) {
 		if (dport != 0 && rtcpPort != 0) {
+			myDest = dest;
 			mTransport = TRANSPORT_UDP;
 			mPort = dport;
+			if(VERBOSE) Log.v(TAG,"myDest IS "+myDest);
+			if(VERBOSE) Log.v(TAG,"mPort IS "+mPort);
+			try {
+				Log.v(TAG,"group address is"+dest);
+				mSocket.joinGroup(dest);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			for (int i=0;i<mBufferCount;i++) {
 				mPackets[i].setPort(dport);
 				mPackets[i].setAddress(dest);
@@ -215,20 +230,20 @@ public class RtpSocket implements Runnable {
 		mBuffers[mBufferIn][1] &= 0x7F;
 		return mBuffers[mBufferIn];
 	}
-
+//没用
 	/** Puts the buffer back into the FIFO without sending the packet. */
 	public void commitBuffer() throws IOException {
 
 		if (mThread == null) {
 			mThread = new Thread(this);
-			mThread.start();
+			mThread.start();//sends the packets in the FIFO one by one
 		}
 		
 		if (++mBufferIn>=mBufferCount) mBufferIn = 0;
 		mBufferCommitted.release();
 
 	}	
-	
+
 	/** Sends the RTP packet over the network. */
 	public void commitBuffer(int length) throws IOException {
 		updateSequence();
@@ -241,7 +256,7 @@ public class RtpSocket implements Runnable {
 
 		if (mThread == null) {
 			mThread = new Thread(this);
-			mThread.start();
+			mThread.start();//sends the packets in the FIFO one by one
 		}		
 		
 	}
@@ -398,7 +413,7 @@ public class RtpSocket implements Runnable {
 		}
 		
 	}
-	
+	//拥塞控制
 	/** Computes the proper rate at which packets are sent. */
 	protected static class Statistics {
 

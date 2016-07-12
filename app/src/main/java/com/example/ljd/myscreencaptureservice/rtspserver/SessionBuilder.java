@@ -22,6 +22,7 @@ package com.example.ljd.myscreencaptureservice.rtspserver;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import com.example.ljd.myscreencaptureservice.rtspserver.audio.AACStream;
 import com.example.ljd.myscreencaptureservice.rtspserver.audio.AMRNBStream;
@@ -136,6 +137,19 @@ public class SessionBuilder {
 			video.setMediaProjection(mMediaProjection);
 			video.setPreviewOrientation(mOrientation);
 			video.setDestinationPorts(5006);
+			InetAddress destination = null;
+			try {
+				destination = InetAddress.getByName(mDestination);
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+			Log.v(TAG,"syncStart(): destination is "+destination);
+			try {
+				video.setTimeToLive(mTimeToLive);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			video.setDestinationAddress(destination);
 		}
 
 		return session;

@@ -48,7 +48,7 @@ public class MediaCodecInputStream extends InputStream {
 	private boolean mClosed = false;
 	
 	public MediaFormat mMediaFormat;
-	private boolean VERBOSE = false;
+	private boolean VERBOSE = true;
 	public MediaCodecInputStream(MediaCodec mediaCodec) {
 		mMediaCodec = mediaCodec;
 		mBuffers = mMediaCodec.getOutputBuffers();
@@ -64,7 +64,7 @@ public class MediaCodecInputStream extends InputStream {
 	public int read() throws IOException {
 		return 0;
 	}
-
+	//把mMediaCodec中的数据装入到buffer中
 	@Override
 	public int read(byte[] buffer, int offset, int length) throws IOException {
 		int min = 0;

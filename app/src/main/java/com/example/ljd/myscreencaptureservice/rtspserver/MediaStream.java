@@ -259,7 +259,7 @@ public abstract class MediaStream implements Stream {
 		if (mStreaming) throw new IllegalStateException("Can't be called while streaming.");
 		if (mPacketizer != null) {
 			mPacketizer.setDestination(mDestination, mRtpPort, mRtcpPort);
-			mPacketizer.getRtpSocket().setOutputStream(mOutputStream, mChannelIdentifier);
+			mPacketizer.getRtpSocket().setOutputStream(mOutputStream, mChannelIdentifier);//TCP
 		}
 		mMode = mRequestedMode;
 		mConfigured = true;

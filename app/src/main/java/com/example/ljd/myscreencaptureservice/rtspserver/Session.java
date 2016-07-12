@@ -393,6 +393,7 @@ public class Session {
 			Stream stream = id==0 ? mAudioStream : mVideoStream;
 			if (stream!=null && !stream.isStreaming()) {
 				try {
+
 					stream.configure();
 				} catch (CameraInUseException e) {
 					postError(ERROR_CAMERA_ALREADY_IN_USE , id, e);
@@ -449,9 +450,7 @@ public class Session {
 		//第二次连接截止到这里
 		if (stream!=null && !stream.isStreaming()) {
 			try {
-				InetAddress destination =  InetAddress.getByName(mDestination);
-				stream.setTimeToLive(mTimeToLive);
-				stream.setDestinationAddress(destination);
+
 
 				stream.start();//主要功能
 				if (getTrack(1-id) == null || getTrack(1-id).isStreaming()) {

@@ -36,9 +36,16 @@ import android.util.Log;
 /**
  * Implementation of Sender Report RTCP packets.
  */
+/*RTCP：五种数据类型
+			200，SR（Sender Report），发送端报告
+			201，RR（Receiver Report），接收端报告
+			202，SDES（Source Description Items），源点描述
+			203，BYE ，结束传输
+			204，APP ，特定应用
+		 */
 public class SenderReport {
 
-	public static final int MTU = 1500;
+	public static final int MTU = 1500;//最大传输单元，所能通过的最大数据包大小（以字节为单位）
 
 	private static final int PACKET_LENGTH = 28;
 	
@@ -52,7 +59,7 @@ public class SenderReport {
 	private int mOctetCount = 0, mPacketCount = 0;
 	private long interval, delta, now, oldnow;
 	private byte mTcpHeader[];
-
+	private InetAddress myDest;
 	public SenderReport(int ssrc) throws IOException {
 		super();
 		this.mSSRC = ssrc;
@@ -70,20 +77,20 @@ public class SenderReport {
 		/*									 | |---------------------								*/
 		/*									 | ||													*/
 		/*									 | ||													*/
-		mBuffer[0] = (byte) Integer.parseInt("10000000",2);
+		mBuffer[0] = (byte) Integer.parseInt("10000000",2);//表示"10000000"是个二进制的数，要转化为十进制
 
 		/* Packet Type PT */
-		mBuffer[1] = (byte) 200;
+		mBuffer[1] = (byte) 200;//包类型（PT）：8比特，SR包包含常量200。
 
 		/* Byte 2,3          ->  Length		                     */
-		setLong(PACKET_LENGTH/4-1, 2, 4);
+		setLong(PACKET_LENGTH/4-1, 2, 4);//长度域（Length）：16比特，其中存放的是该SR包以32比特为单位的总长度减一。
 
-		/* Byte 4,5,6,7      ->  SSRC                            */
-		/* Byte 8,9,10,11    ->  NTP timestamp hb				 */
+		/* Byte 4,5,6,7      ->  SSRC                            *///同步源（SSRC）：SR包发送者的同步源标识符。与对应RTP包中的SSRC一样。
+		/* Byte 8,9,10,11    ->  NTP timestamp hb				 *///NTP Timestamp（Network time protocol）SR包发送时的绝对时间值。NTP的作用是同步不同的RTP媒体流。
 		/* Byte 12,13,14,15  ->  NTP timestamp lb				 */
-		/* Byte 16,17,18,19  ->  RTP timestamp		             */
-		/* Byte 20,21,22,23  ->  packet count				 	 */
-		/* Byte 24,25,26,27  ->  octet count			         */
+		/* Byte 16,17,18,19  ->  RTP timestamp		             *///RTP Timestamp：与NTP时间戳对应，与RTP数据包中的RTP时间戳具有相同的单位和随机初始值。
+		/* Byte 20,21,22,23  ->  packet count				 	 *///Sender’s packet count：从开始发送包到产生这个SR包这段时间里，发送者发送的RTP数据包的总数. SSRC改变时，这个域清零。
+		/* Byte 24,25,26,27  ->  octet count			         *///从开始发送包到产生这个SR包这段时间里，发送者发送的净荷数据的总字节数（不包括头部和填充）。发送者改变其SSRC时，这个域要清零。
 
 		try {
 			usock = new MulticastSocket();
@@ -99,6 +106,11 @@ public class SenderReport {
 	}
 
 	public void close() {
+		try {
+			usock.leaveGroup(myDest);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		usock.close();
 	}
 
@@ -148,6 +160,12 @@ public class SenderReport {
 	}
 
 	public void setDestination(InetAddress dest, int dport) {
+		myDest = dest;
+		try {
+			usock.joinGroup(dest);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		mTransport = TRANSPORT_UDP;
 		mPort = dport;
 		upack.setPort(dport);

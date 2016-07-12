@@ -323,12 +323,12 @@ public class RtspServer extends Service {
 		//Session session = SessionBuilder.getInstance().getSession();
 		session.setOrigin(client.getLocalAddress().getHostAddress());
 
-		if (session.getDestination()==null) {
+		//if (session.getDestination()==null) {
 			//Returns the IP address of the target host this socket is connected to
 			Log.v(TAG,"handleRequest: session.getDestination()==null");
 			session.setDestination(client.getInetAddress().getHostAddress());
 			Log.v(TAG,"handleRequest: session.setDestination--->"+client.getInetAddress().getHostAddress());
-		}
+		//}
 		return session;
 	}
 	
@@ -483,7 +483,7 @@ public class RtspServer extends Service {
                                     "Content-Type: application/sdp\r\n";
 
                     response.attributes = requestAttributes;
-                    response.content = requestContent;
+                    response.content = requestContent;//SDP的格式发送
 
                     // If no exception has been thrown, we reply with OK
                     response.status = Response.STATUS_OK;
